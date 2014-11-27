@@ -1,7 +1,8 @@
 Ping-Pong-Game
 ==============
-Developer: Sumit Saurabh
 Language: Python
+Created on: 30-05-2013
+Developer: Sumit Saurabh
 -----------------
 Pong is one of the first arcade vedio game (1972).
 
