@@ -1,0 +1,277 @@
+"""
+------------------------------------------------------------------------------------------------------------
+PONG VEDIO GAME:
+------------------------------------------------------------------------------------------------------------
+Pong is one of the first arcade vedio game (1972).
+------------------------------------------------------------------------------------------------------------
+Interpreted Code Address: http://www.codeskulptor.org/#user17_3p4Gziu3kY_0.py
+------------------------------------------------------------------------------------------------------------
+Developer: Sumit Saurabh (30-05-2013)
+------------------------------------------------------------------------------------------------------------
+"""
+# importing modules
+import simplegui
+import random
+
+# Initializing Globals
+register = True
+WIDTH = 700
+HEIGHT = 500
+speed = 3
+Incr = .01
+BALL_RADIUS = 20
+PADD_HEIGHT = 80
+PADD_WIDTH = 8
+HALF_PADD_WIDTH = PADD_WIDTH / 2
+ball_vel = [speed, 1.2*random.randrange(-1, 1)+.9]
+ball_pos = [WIDTH / 2, HEIGHT / 2]
+paddle1_pos = [HALF_PADD_WIDTH - 1, HEIGHT/ 2]
+paddle2_pos = [WIDTH - HALF_PADD_WIDTH, HEIGHT / 2]
+paddle_vel = 8
+right = "True"
+current_key = " "
+score1 = 0
+score2 = 0 
+start = False
+player1 = "Player1"
+player2 = "Player2"
+target_score = 100
+string1 = "   WELCOME TO PONG"
+string2 = " "
+color = "Maroon"
+numclick = 0
+rule = True
+
+# resetting all the globals for new game
+def reset():
+    global  ball_vel, ball_pos, paddle1_pos, paddle2_pos, right, current_key, score1, paddle_vel
+    global score2, start, player1, player2, target_score, string1, string2, Incr, speed
+    speed = 2
+    ball_vel[0] = speed
+    ball_vel[1] = 1.2 * random.randrange(-1, 1) + .9
+    ball_pos = [WIDTH / 2, HEIGHT / 2]
+    paddle1_pos = [HALF_PADD_WIDTH - 1, HEIGHT/ 2]
+    paddle2_pos = [WIDTH - HALF_PADD_WIDTH, HEIGHT / 2]
+    Incr = .001
+    paddle_vel = 3
+    right = "True"
+    current_key = " "
+    score1 = 0
+    score2 = 0 
+    start = False
+    player1 = "Player1"
+    player2 = "Player2"
+    target_score = 100
+    string1 = "   WELCOME TO PONG"
+    string2 = " "
+    
+# start handler
+def new_game():
+    global register
+    register = True
+    reset()
+    Initializer()
+    
+def start_handler():
+    global player1, player2, string1, target_score, start, string2, register, rule
+    rule = False
+    if (player1 == "Player1" or player1 == "") or (player2 == "Player2" or player2 == "") or (player1 == player2):
+        string1 = "Please Specify Player's Name"
+    elif target_score == 100 or target_score <= 0:
+        string1 = " Please Enter Target Score"
+    else:
+        start = True
+        string1 = " "
+        string2 = " "
+    register = False
+    
+# Pause handler
+def pause_handler():
+    global start, string2, numclick
+    start = False
+    string2 = "         Paused!"
+      
+# mouse click handler
+def click(pos):
+    global numclick
+    numclick = (numclick + 1) % 4
+    if numclick == 2:
+        pause_handler()
+    elif numclick == 0 or numclick == 1:
+        start_handler()
+        
+# Target score manager
+def target_handler():
+    global target_score, score1, score2, string1, string2
+    if (int(target_score) == score1) and score1:
+        string1 = str("     Congratulation! " + player1)
+        pause_handler()
+        string2 = str("  You are Winner!")
+        
+    if (int(target_score) == score2) and score2:
+        string1 = str("     Congratulation! " + player2)
+        pause_handler()
+        string2 = str("  You are Winner!")
+        
+# Helper function for updating balls position
+def ball_position():
+    global BALL_RADIUS, PADD_WIDTH, WIDTH, HEIGHT, PADD_HEIGHT, Incr
+    ball_pos[0] = ball_pos[0] + ball_vel[0]
+    ball_pos[1] = ball_pos[1] + ball_vel[1]
+    if ball_vel[0] > 0:
+        ball_vel[0] += Incr
+    elif ball_vel[0] < 0:
+        ball_vel[0] -= Incr
+    if ball_vel[1] > 0:
+        ball_vel[1] += Incr
+    elif ball_vel[1] < 0:
+        ball_vel[1] -= Incr
+   
+    if ball_pos[0] <= BALL_RADIUS + PADD_WIDTH:
+        ball_vel[0] = - ball_vel[0]
+    elif ball_pos[0] >= WIDTH - PADD_WIDTH - BALL_RADIUS - 1:
+        ball_vel[0] = - ball_vel[0]
+    if ball_pos[1] < BALL_RADIUS:
+        ball_vel[1] = - ball_vel[1]
+    elif ball_pos[1] > HEIGHT - BALL_RADIUS - 1:
+        ball_vel[1] = - ball_vel[1]
+    
+# Input handler
+def input_player1(name):
+    global player1, score1
+    player1 = name
+    
+def input_player2(name):
+    global player2, player1, string1
+    player2 = name
+    if(player1 == player2):
+        string1 = "Error! Players have same name."
+    else:
+        string1 = " "
+
+def target(score):
+    global target_score, string2, string1
+    if score1 == 0 and score2 == 0:
+        target_score = int(score)
+    if target_score < 1:
+       string2 = "     Invalid Entry"
+    elif score1 == 0 and score2 == 0:
+       string1 = "Target fixed. Chase Target"
+       string2 = "Press Start Button"
+        
+    
+# Paddle motion manager
+def keydown(key):
+    global paddle_vel, PADD_HEIGHT, current_key
+    current_key = key
+            
+def keyup(key):
+    global current_key
+    current_key = " "
+    
+# game's rule button handler
+def rule_handler():
+    global rule
+    pause_handler()
+    rule = True
+    
+    
+# draw handler
+def draw(canvas):
+    global BALL_RADIUS, WIDTH, HEIGHT, PADD_WIDTH, score1, score2, paddle1_pos, paddle2_pos, ball_pos, start
+    global player1, player2, target_score, speed, string1, string2, color
+    # update ball
+    if start:
+        ball_position()        
+    canvas.draw_circle(ball_pos, BALL_RADIUS, 3, "Yellow", "White")
+    
+    # drawing mid line and gutter
+    canvas.draw_line([WIDTH / 2, 0], [WIDTH / 2, HEIGHT], 1, "white")
+    canvas.draw_line([PADD_WIDTH, 0], [PADD_WIDTH, HEIGHT], 1, "white")
+    canvas.draw_line([WIDTH - 1 - PADD_WIDTH, 0], [WIDTH - 1 - PADD_WIDTH, HEIGHT], 1, "White")
+    
+    # drawing paddles
+    canvas.draw_line([paddle1_pos[0], paddle1_pos[1] + PADD_HEIGHT / 2], [paddle1_pos[0], paddle1_pos[1] - PADD_HEIGHT / 2], PADD_WIDTH, "White")
+    #canvas.draw_line([WIDTH - 1 - PADD_WIDTH, 0], [WIDTH - 1 - PADD_WIDTH, HEIGHT], 1, "white")
+    canvas.draw_line([paddle2_pos[0], paddle2_pos[1] + PADD_HEIGHT / 2], [paddle2_pos[0], paddle2_pos[1] - PADD_HEIGHT / 2], PADD_WIDTH, "white")
+    
+    # Updateing paddels vertical position
+    if current_key == simplegui.KEY_MAP["up"] and paddle2_pos[1] > PADD_HEIGHT / 2:
+         paddle2_pos[1] -= paddle_vel
+    if current_key == simplegui.KEY_MAP["down"] and paddle2_pos[1] < HEIGHT - 1 - PADD_HEIGHT / 2:
+         paddle2_pos[1] += paddle_vel
+    
+    if current_key == simplegui.KEY_MAP["w"] and paddle1_pos[1] > PADD_HEIGHT / 2:
+         paddle1_pos[1] -= paddle_vel
+    if current_key == simplegui.KEY_MAP["d"] and paddle1_pos[1] < HEIGHT - 1 - PADD_HEIGHT / 2:
+         paddle1_pos[1] += paddle_vel
+    
+    # update scores score
+    if (ball_pos[0] <= BALL_RADIUS + PADD_WIDTH) and (paddle1_pos[1] - PADD_HEIGHT / 2 >= ball_pos[1] or ball_pos[1] >= paddle1_pos[1] + PADD_HEIGHT / 2):
+        score2 += 1
+        ball_pos[0] = WIDTH / 2
+        ball_pos[1] = HEIGHT / 2
+        ball_vel[0] = speed
+        ball_vel[1] = 1.2*random.randrange(-1, 1)+.9
+          
+    if (ball_pos[0] >= WIDTH - 1 - BALL_RADIUS - PADD_WIDTH) and (paddle2_pos[1] - PADD_HEIGHT / 2 >= ball_pos[1] or ball_pos[1] >= paddle2_pos[1] + PADD_HEIGHT / 2):
+        score1 += 1  
+        ball_pos[0] = WIDTH / 2
+        ball_pos[1] = HEIGHT / 2
+        ball_vel[0] = -speed
+        ball_vel[1] = 1.2 * random.randrange(-1, 1) + .9
+               
+    # print scores
+    canvas.draw_text(str(player1 + "'s Score: " + str(score1)),[WIDTH / 8, HEIGHT / 8], 25, "White")
+    canvas.draw_text(str(player2 + "'s Score: " + str(score2)),[WIDTH / 2 + WIDTH / 8, HEIGHT / 8], 25, "White")
+    
+    # Who wins?
+    target_handler()
+    canvas.draw_text(string1, [WIDTH / 4, HEIGHT / 2.1], 30, color)
+    canvas.draw_text(string2, [WIDTH / 3, HEIGHT / 2.1 + 35], 30, color)
+    
+    # rules
+    if rule:
+        canvas.draw_text("Controls:", [30, 300], 23, "Blue")
+        canvas.draw_text("1. After each Input, Press Enter.", [60, 325], 23, "Blue")
+        canvas.draw_text("2. First Player: Use 'w' and 'd' key to control the Pad.", [60, 350], 23, "Blue")
+        canvas.draw_text("3. Second Player: Use 'Up' and 'Down' Arrow key to control the Pad.", [60, 375], 23, "Blue")
+        canvas.draw_text("4. Double click on Pong table to pause or unpause the game.", [60, 400], 23, "Blue")
+        canvas.draw_text("5. Opponent will gain a point if you fail to hit the ball by pad.", [60, 425], 23, "Blue")
+        canvas.draw_text("Hope You will enjoy this game a lot...", [180, 455], 23, "Blue")
+        canvas.draw_text("-- Sumit Saurabh", [450, 480], 23, "Blue")
+
+def Initializer():
+    if register:       
+    # Initilizing Frame
+        frame = simplegui.create_frame("Pong", WIDTH, HEIGHT)
+
+    # Register event handler
+        frame.set_keydown_handler(keydown)
+        frame.set_keyup_handler(keyup)
+        frame.set_draw_handler(draw)
+        frame.set_canvas_background("Green")
+        frame.add_input("1st Player Name", input_player1, 150)
+        frame.add_input("2nd Player Name", input_player2, 150)
+        frame.add_input("Target Score", target, 150)
+        frame.add_label(" ")
+        frame.add_button("Start", start_handler, 150)
+        # frame.add_button("Pause", pause_handler, 150)
+        frame.add_button("New Game", new_game, 150)
+        frame.add_button("Rules", rule_handler, 150)
+        frame.add_label(" ")
+        frame.add_label("    PONG GAME")
+        frame.add_label("Developer: Sumit saurabh")
+        '''
+        frame.add_label("1. First Player: Use 'w' and 'd' key to control the Pad")
+        frame.add_label("2. Second Player: Use 'Up Arrow' and 'Down Arrow' key to control the Pad")
+        frame.add_label("3. Double click on Pong table to pause or unpause the game")
+        #frame.add_label("")
+        frame.add_label("4. Hope You will enjoy this game a lot")
+        frame.add_label(" - Sumit Saurabh")
+        '''
+        frame.set_mouseclick_handler(click)
+        # start frame
+        frame.start()
+        
+Initializer()
